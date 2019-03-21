@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>9008642e-e598-4e05-a61b-d392e51d5195</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Netscape.py</StartupFile>
+    <StartupFile>ResNet50.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,7 +21,22 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="data_utils.py" />
+    <Compile Include="deep_neural_network.py" />
+    <Compile Include="FileSystem.py" />
+    <Compile Include="h5_utils.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Netscape.py" />
+    <Compile Include="ResNet50.py" />
+    <Compile Include="test_suite.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="practice_data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="practice_data\test_signs.h5" />
+    <Content Include="practice_data\train_signs.h5" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
