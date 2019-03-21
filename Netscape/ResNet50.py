@@ -21,7 +21,8 @@ K.set_image_data_format('channels_last')
 K.set_learning_phase(1)
 
 # User create modules
-from h5_utils import load_and_process_data_set
+from h5_utils import load_dataset
+from data_utils import convert_to_one_hot
 from FileSystem import FileSystem
 
 class ResNet50(object):
@@ -37,12 +38,13 @@ class ResNet50(object):
 	input_shape -- shape of the images of the dataset
 	classes -- integer, number of classes
     """
-    def __init__(self, input_shape = (64, 64, 3), classes = 6):
+    def __init__(self, classes, input_shape = (64, 64, 3)):
         tf.reset_default_graph()
 
         print("\nBuilding ResNet50 model with input_shape:", str(input_shape), "and classes", str(classes))
+        self.classes = classes.reshape((classes.shape[0],1))
         self.input_shape = input_shape
-        self.model = self.build_model(input_shape, classes)
+        self.model = self.build_model(input_shape, number_of_classes=self.classes.shape[0])
 
         print("\tCompiling model with the following parameters:")
         print("\t\tOptimizer [Flavor of Gradient Descent] : Adam")
@@ -51,17 +53,13 @@ class ResNet50(object):
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
         print("\tResNet50 model now ready to load data.")
-        self.X_train_orig = None
-        self.Y_train_orig = None
-        self.X_test_orig = None
-        self.Y_test_orig = None
-        self.classes = classes
 
     def __del__(self):
+        del self.classes
         del self.input_shape
         del self.model
 
-    def build_model(self, input_shape, classes):
+    def build_model(self, input_shape, number_of_classes):
         """
         Implementation of the popular ResNet50 the following architecture:
         CONV2D -> BATCHNORM -> RELU -> MAXPOOL -> CONVBLOCK -> IDBLOCK*2 -> CONVBLOCK -> IDBLOCK*3
@@ -69,12 +67,13 @@ class ResNet50(object):
 
         Arguments:
         input_shape -- shape of the images of the dataset
-        classes -- integer, number of classes
+        number_of_classes -- integer, number of classes
 
         Returns:
         model -- a Model() instance in Keras
         """
         # Define the input as a tensor with shape input_shape
+        print(number_of_classes)
         X_input = Input(input_shape)
 
 
@@ -116,7 +115,7 @@ class ResNet50(object):
 
         # output layer
         X = Flatten()(X)
-        X = Dense(classes, activation='softmax', name='fc' + str(classes), kernel_initializer = glorot_uniform(seed=0))(X)
+        X = Dense(number_of_classes, activation='softmax', name='fc' + str(number_of_classes), kernel_initializer = glorot_uniform(seed=0))(X)
 
         # Create model
         model = Model(inputs = X_input, outputs = X, name='ResNet50')
@@ -158,12 +157,20 @@ class ResNet50(object):
 
 
     def train_model(self, x_train, y_train, epochs = 2, batch_size = 32):
+        x = ResNet50.process_x(x_train)
+        y = ResNet50.process_y(y_train, self.classes.shape[0])
         print("\nTraining model... for ", epochs, "epochs with a batch size of", batch_size)
-        self.model.fit(x_train, y_train, epochs = epochs, batch_size = batch_size)
+        print("x_train shape: ", str(x.shape))
+        print("y_train shape: ", str(y.shape))
+        self.model.fit(x, y, epochs = epochs, batch_size = batch_size)
 
     def evaluate(self, x_test, y_test):
+        x = ResNet50.process_x(x_test)
+        y = ResNet50.process_y(y_test, self.classes.shape[0])
         print("\nEvaluating Model...")
-        preds = self.model.evaluate(x_test, y_test, verbose=1)
+        print("x_test shape: ", str(x.shape))
+        print("y_test shape: ", str(y.shape))
+        preds = self.model.evaluate(x, y, verbose=1)
         print ("\tLoss = " + str(preds[0]))
         print ("\tTest Accuracy = " + str(preds[1]))
         return preds[0], preds[1]
@@ -185,6 +192,14 @@ class ResNet50(object):
         for index, response in enumerate(self.model.predict(pixels)[0]):
             if response == 1:
                 return index
+
+    @staticmethod
+    def process_x(x):
+        return x/255.
+
+    @staticmethod
+    def process_y(y, number_of_targets):
+        return convert_to_one_hot(y, number_of_targets).T
 
     @staticmethod
     def identity_block(X, f, filters, stage, block):
@@ -286,8 +301,8 @@ class ResNet50(object):
         return X
 
 def test_ResNet50(epochs = 2, batch_size = 32):
-    test_model = ResNet50(input_shape = (64, 64, 3), classes = 6)
-    x_train, y_train, x_test, y_test, classes = load_and_process_data_set(relative_directory_path="practice_data/", number_of_targets=6)
+    x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path="practice_data/")
+    test_model = ResNet50(input_shape = (64, 64, 3), classes = classes)
     test_model.train_model(x_train, y_train, epochs, batch_size)
     test_model.evaluate(x_test, y_test)
 

@@ -22,7 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="data_utils.py" />
-    <Compile Include="deep_neural_network.py" />
+    <Compile Include="FullyConnectedNet.py" />
     <Compile Include="FileSystem.py" />
     <Compile Include="h5_utils.py">
       <SubType>Code</SubType>
