@@ -289,7 +289,7 @@ def test_ResNet50(epochs = 2, batch_size = 32):
     test_model = ResNet50(input_shape = (64, 64, 3), classes = 6)
     x_train, y_train, x_test, y_test, classes = load_and_process_data_set(relative_directory_path="practice_data/", number_of_targets=6)
     test_model.train_model(x_train, y_train, epochs, batch_size)
-    test_model.evaluate_model(x_test, y_test)
+    test_model.evaluate(x_test, y_test)
 
 
 if __name__ == "__main__":
