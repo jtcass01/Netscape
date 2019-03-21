@@ -173,7 +173,7 @@ class ResNet50(object):
         preds = self.model.evaluate(x, y, verbose=1)
         print ("\tLoss = " + str(preds[0]))
         print ("\tTest Accuracy = " + str(preds[1]))
-        return preds[0], preds[1]
+        return preds[1]
 
     def predict_image(self, image_path, target_size=(64, 64)):
         print("preparing to predict image:", image_path)
@@ -302,7 +302,7 @@ class ResNet50(object):
 
 def test_ResNet50(epochs = 2, batch_size = 32):
     x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path="practice_data/")
-    test_model = ResNet50(input_shape = (64, 64, 3), classes = classes)
+    test_model = ResNet50(classes = classes)
     test_model.train_model(x_train, y_train, epochs, batch_size)
     test_model.evaluate(x_test, y_test)
 
