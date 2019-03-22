@@ -8,7 +8,7 @@ import os
 
 from keras import layers
 from keras.layers import Input, Add, Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D, AveragePooling2D, MaxPooling2D, GlobalMaxPooling2D
-from keras.models import Model, load_model, model_from_json, Sequential
+from keras.models import Model, load_model, model_from_json
 from keras.preprocessing import image
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
@@ -22,7 +22,7 @@ K.set_learning_phase(1)
 
 # User create modules
 from h5_utils import load_dataset
-from data_utils import convert_to_one_hot
+from data_utils import convert_to_one_hot, process_x, process_y
 from FileSystem import FileSystem
 
 class FullyConnectedNet(object):
@@ -75,16 +75,16 @@ class FullyConnectedNet(object):
         return model
 
     def train_model(self, x_train, y_train, epochs = 2, batch_size = 32):
-        x = FullyConnectedNet.process_x(x_train)
-        y = FullyConnectedNet.process_y(y_train, self.classes.shape[0])
+        x = process_x(x_train)
+        y = process_y(y_train, self.classes.shape[0])
         print("\nTraining model... for ", epochs, "epochs with a batch size of", batch_size)
         print("x_train shape: ", str(x.shape))
         print("y_train shape: ", str(y.shape))
         self.model.fit(x, y, epochs = epochs, batch_size = batch_size)
 
     def evaluate(self, x_test, y_test):
-        x = FullyConnectedNet.process_x(x_test)
-        y = FullyConnectedNet.process_y(y_test, self.classes.shape[0])
+        x = process_x(x_test)
+        y = process_y(y_test, self.classes.shape[0])
         print("\nEvaluating Model...")
         print("x_test shape: ", str(x.shape))
         print("y_test shape: ", str(y.shape))
@@ -111,7 +111,7 @@ class FullyConnectedNet(object):
             if response == 1:
                 return index
 
-    def save_model(self, loss=100, accuracy=0, model = 'best_model'):
+    def save_model(self, model = 'best_model'):
         # Save the model to JSON
         json_model = self.model.to_json()
         with open(os.getcwd() + os.path.sep +  "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + ".json", "w") as json_file:
@@ -143,13 +143,6 @@ class FullyConnectedNet(object):
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         print("Successfully loaded model weights for: " + model + " from disk.")
 
-    @staticmethod
-    def process_x(x):
-        return x/255.
-
-    @staticmethod
-    def process_y(y, number_of_targets):
-        return convert_to_one_hot(y, number_of_targets).T
 
 def test_FCNN(epochs = 2, batch_size = 32):
     x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path="practice_data/")

@@ -3,6 +3,12 @@ import math
 
 import numpy as np
 
+def process_x(x):
+    return x/255.
+
+def process_y(y, number_of_targets):
+    return convert_to_one_hot(y, number_of_targets).T
+
 def convert_to_one_hot(Y, C):
     Y = np.eye(C)[Y.reshape(-1)].T
     return Y

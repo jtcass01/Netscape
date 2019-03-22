@@ -22,7 +22,7 @@ K.set_learning_phase(1)
 
 # User create modules
 from h5_utils import load_dataset
-from data_utils import convert_to_one_hot
+from data_utils import convert_to_one_hot, process_x, process_y
 from FileSystem import FileSystem
 
 class ResNet50(object):
@@ -154,8 +154,8 @@ class ResNet50(object):
 
 
     def train_model(self, x_train, y_train, epochs = 2, batch_size = 32):
-        x = ResNet50.process_x(x_train)
-        y = ResNet50.process_y(y_train, self.classes.shape[0])
+        x = process_x(x_train)
+        y = process_y(y_train, self.classes.shape[0])
         print("\nTraining model... for ", epochs, "epochs with a batch size of", batch_size)
         print("\tx_train shape: ", str(x.shape))
         print("\ty_train shape: ", str(y.shape))
@@ -163,8 +163,8 @@ class ResNet50(object):
 
     def evaluate(self, x_test, y_test):
         print("\nEvaluating Model...")
-        x = ResNet50.process_x(x_test)
-        y = ResNet50.process_y(y_test, self.classes.shape[0])
+        x = process_x(x_test)
+        y = process_y(y_test, self.classes.shape[0])
 
         preds = self.model.evaluate(x, y, verbose=1)
 
@@ -189,14 +189,6 @@ class ResNet50(object):
         for index, response in enumerate(self.model.predict(pixels)[0]):
             if response == 1:
                 return index
-
-    @staticmethod
-    def process_x(x):
-        return x/255.
-
-    @staticmethod
-    def process_y(y, number_of_targets):
-        return convert_to_one_hot(y, number_of_targets).T
 
     @staticmethod
     def identity_block(X, f, filters, stage, block):
