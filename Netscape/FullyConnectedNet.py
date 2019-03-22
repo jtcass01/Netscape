@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import pydot
+import pydot, graphviz
 from IPython.display import SVG
 import scipy.misc
 import os
@@ -91,7 +91,7 @@ class FullyConnectedNet(object):
         preds = self.model.evaluate(x, y, verbose=1)
         print ("\tLoss = " + str(preds[0]))
         print ("\tTest Accuracy = " + str(preds[1]))
-        return preds[1]
+        return preds[0], preds[1]
 
     def predict_image(self, image_path, target_size=(64, 64)):
         print("preparing to predict image:", image_path)
@@ -111,24 +111,23 @@ class FullyConnectedNet(object):
             if response == 1:
                 return index
 
-    def save_model(self, model = 'best_model'):
+    def save_model(self, loss=100, accuracy=0, model = 'best_model'):
         # Save the model to JSON
         json_model = self.model.to_json()
-        with open("models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + ".json", "w") as json_file:
+        with open(os.getcwd() + os.path.sep +  "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + ".json", "w") as json_file:
             json_file.write(json_model)
 
         # Save weights
-        self.model.save_weights(".." + os.path.sep + ".." + os.path.sep + "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + ".h5")
+        self.model.save_weights(os.getcwd() + os.path.sep + "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + ".h5")
         print("Saved model " + model + " to disk")
 
         # Save loss and accuracy
-        loss, accuracy = self.evaluate_model()
         FileSystem.start_log(str(loss), os.getcwd() + os.path.sep +  "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + "_evaluation.txt")
         FileSystem.log(str(accuracy), os.getcwd() + os.path.sep + "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + "_evaluation.txt")
 
         # Save graphical model summary and print summary to console.
         print(self.model.summary())
-        plot_model(self.model, to_file= os.getcwd() + os.path.sep + "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)
+#        plot_model(self.model, to_file= os.getcwd() + os.path.sep + "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)
 
     def load_model(self, model = "best_model"):
         print("Attemping to load the model: " + model + " from disk.")
@@ -156,8 +155,8 @@ def test_FCNN(epochs = 2, batch_size = 32):
     x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path="practice_data/")
     test_model = FullyConnectedNet(classes=classes)
     test_model.train_model(x_train, y_train, epochs, batch_size)
-    test_model.evaluate(x_test, y_test)
-    test_model.save_model(model="test_model")
+    loss, accuracy = test_model.evaluate(x_test, y_test)
+    test_model.save_model(loss, accuracy, model="test_model")
 
 if __name__ == "__main__":
     test_FCNN(750, 32)

@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>9008642e-e598-4e05-a61b-d392e51d5195</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>FullyConnectedNet.py</StartupFile>
+    <StartupFile>ResNet50.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -36,11 +36,17 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="models\" />
-    <Folder Include="models\Fully_Connect_Network\" />
+    <Folder Include="models\Fully_Connected_Network\" />
     <Folder Include="models\ResNet50\" />
     <Folder Include="practice_data\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="models\Fully_Connected_Network\test_model.h5" />
+    <Content Include="models\Fully_Connected_Network\test_model.json" />
+    <Content Include="models\Fully_Connected_Network\test_model_evaluation.txt" />
+    <Content Include="models\ResNet50\test_model.h5" />
+    <Content Include="models\ResNet50\test_model.json" />
+    <Content Include="models\ResNet50\test_model_evaluation.txt" />
     <Content Include="practice_data\test_signs.h5" />
     <Content Include="practice_data\train_signs.h5" />
   </ItemGroup>

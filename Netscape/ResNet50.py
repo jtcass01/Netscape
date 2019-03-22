@@ -120,24 +120,23 @@ class ResNet50(object):
 
         return model
 
-    def save_model(self, model = 'best_model'):
+    def save_model(self, loss=100, accuracy=0, model = 'best_model'):
         # Save the model to JSON
         json_model = self.model.to_json()
-        with open("models" + os.path.sep + "ResNet50" + os.path.sep + model + ".json", "w") as json_file:
+        with open(os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".json", "w") as json_file:
             json_file.write(json_model)
 
         # Save weights
-        self.model.save_weights("models" + os.path.sep + "ResNet50" + os.path.sep + model + ".h5")
+        self.model.save_weights(os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".h5")
         print("Saved model " + model + " to disk")
 
         # Save loss and accuracy
-        loss, accuracy = self.evaluate_model()
         FileSystem.start_log(str(loss), os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + "_evaluation.txt")
         FileSystem.log(str(accuracy), os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + "_evaluation.txt")
 
         # Save graphical model summary and print summary to console.
         print(self.model.summary())
-        plot_model(self.model, to_file= os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)
+#        plot_model(self.model, to_file= os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)
 
     def load_model(self, model = "best_model"):
         print("Attemping to load the model: " + model + " from disk.")
@@ -158,20 +157,20 @@ class ResNet50(object):
         x = ResNet50.process_x(x_train)
         y = ResNet50.process_y(y_train, self.classes.shape[0])
         print("\nTraining model... for ", epochs, "epochs with a batch size of", batch_size)
-        print("x_train shape: ", str(x.shape))
-        print("y_train shape: ", str(y.shape))
+        print("\tx_train shape: ", str(x.shape))
+        print("\ty_train shape: ", str(y.shape))
         self.model.fit(x, y, epochs = epochs, batch_size = batch_size)
 
     def evaluate(self, x_test, y_test):
+        print("\nEvaluating Model...")
         x = ResNet50.process_x(x_test)
         y = ResNet50.process_y(y_test, self.classes.shape[0])
-        print("\nEvaluating Model...")
-        print("x_test shape: ", str(x.shape))
-        print("y_test shape: ", str(y.shape))
+
         preds = self.model.evaluate(x, y, verbose=1)
+
         print ("\tLoss = " + str(preds[0]))
         print ("\tTest Accuracy = " + str(preds[1]))
-        return preds[1]
+        return preds[0], preds[1]
 
     def predict_image(self, image_path, target_size=(64, 64)):
         print("preparing to predict image:", image_path)
@@ -302,7 +301,7 @@ def test_ResNet50(epochs = 2, batch_size = 32):
     x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path="practice_data/")
     test_model = ResNet50(classes = classes)
     test_model.train_model(x_train, y_train, epochs, batch_size)
-    test_model.evaluate(x_test, y_test)
+    loss, accuracy = test_model.evaluate(x_test, y_test)
     test_model.save_model(model="test_model")
 
 
