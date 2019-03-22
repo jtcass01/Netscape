@@ -73,9 +73,7 @@ class ResNet50(object):
         model -- a Model() instance in Keras
         """
         # Define the input as a tensor with shape input_shape
-        print(number_of_classes)
         X_input = Input(input_shape)
-
 
         # Zero-Padding
         X = ZeroPadding2D((3, 3))(X_input)
@@ -115,7 +113,7 @@ class ResNet50(object):
 
         # output layer
         X = Flatten()(X)
-        X = Dense(number_of_classes, activation='softmax', name='fc' + str(number_of_classes), kernel_initializer = glorot_uniform(seed=0))(X)
+        X = Dense(number_of_classes, activation='softmax', name='fc' + str(number_of_classes), kernel_initializer = glorot_uniform())(X)
 
         # Create model
         model = Model(inputs = X_input, outputs = X, name='ResNet50')
@@ -125,21 +123,21 @@ class ResNet50(object):
     def save_model(self, model = 'best_model'):
         # Save the model to JSON
         json_model = self.model.to_json()
-        with open(".." + os.path.sep + ".." + os.path.sep + "models" + os.path.sep + model + ".json", "w") as json_file:
+        with open("models" + os.path.sep + "ResNet50" + os.path.sep + model + ".json", "w") as json_file:
             json_file.write(json_model)
 
         # Save weights
-        self.model.save_weights(".." + os.path.sep + ".." + os.path.sep + "models" + os.path.sep + model + ".h5")
+        self.model.save_weights("models" + os.path.sep + "ResNet50" + os.path.sep + model + ".h5")
         print("Saved model " + model + " to disk")
 
         # Save loss and accuracy
         loss, accuracy = self.evaluate_model()
-        FileSystem.start_log(str(loss), os.getcwd() + os.path.sep + ".." + os.path.sep + ".." + os.path.sep + "models" + os.path.sep + model + "_evaluation.txt")
-        FileSystem.log(str(accuracy), os.getcwd() + os.path.sep + ".." + os.path.sep + ".." + os.path.sep + "models" + os.path.sep + model + "_evaluation.txt")
+        FileSystem.start_log(str(loss), os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + "_evaluation.txt")
+        FileSystem.log(str(accuracy), os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + "_evaluation.txt")
 
         # Save graphical model summary and print summary to console.
         print(self.model.summary())
-        plot_model(self.model, to_file= os.getcwd() + os.path.sep + ".." + os.path.sep + ".." + os.path.sep + "models" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)
+        plot_model(self.model, to_file= os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)
 
     def load_model(self, model = "best_model"):
         print("Attemping to load the model: " + model + " from disk.")
@@ -151,7 +149,7 @@ class ResNet50(object):
 
         #load weights into new model
         print("Attempting to load model from disk..")
-        self.model.load_weights(".." + os.path.sep + ".." + os.path.sep + "models" + os.path.sep + model + ".h5")
+        self.model.load_weights("models" + os.path.sep + "ResNet50" + os.path.sep + model + ".h5")
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         print("Successfully loaded model weights for: " + model + " from disk.")
 
@@ -305,6 +303,7 @@ def test_ResNet50(epochs = 2, batch_size = 32):
     test_model = ResNet50(classes = classes)
     test_model.train_model(x_train, y_train, epochs, batch_size)
     test_model.evaluate(x_test, y_test)
+    test_model.save_model(model="test_model")
 
 
 if __name__ == "__main__":

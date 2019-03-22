@@ -35,6 +35,9 @@
     <Compile Include="test_suite.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="models\" />
+    <Folder Include="models\Fully_Connect_Network\" />
+    <Folder Include="models\ResNet50\" />
     <Folder Include="practice_data\" />
   </ItemGroup>
   <ItemGroup>
