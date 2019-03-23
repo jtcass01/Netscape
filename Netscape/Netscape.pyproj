@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>9008642e-e598-4e05-a61b-d392e51d5195</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>ResNet50.py</StartupFile>
+    <StartupFile>classifier.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

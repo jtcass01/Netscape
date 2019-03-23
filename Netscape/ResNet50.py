@@ -120,7 +120,7 @@ class ResNet50(object):
 
         return model
 
-    def save_model(self, loss=100, accuracy=0, model = 'best_model'):
+    def save_model(self, loss=100, accuracy=0, model = 'test_model'):
         # Save the model to JSON
         json_model = self.model.to_json()
         with open(os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".json", "w") as json_file:
@@ -138,7 +138,7 @@ class ResNet50(object):
         print(self.model.summary())
 #        plot_model(self.model, to_file= os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)
 
-    def load_model(self, model = "best_model"):
+    def load_model(self, model = "test_model"):
         print("Attemping to load the model: " + model + " from disk.")
 
         # read in the model from json
