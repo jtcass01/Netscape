@@ -1,13 +1,22 @@
+import enum
+import os
+
 from ResNet50 import ResNet50
 from FullyConnectedNet import FullyConnectedNet
 from h5_utils import load_dataset
 
+PYTHON_INTERPRETER_PATH = "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\Python36_64\\python.exe\""
+
 class Classifier(object):
     """Abstraction class for handling a variety of classifiers."""
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, model_name):
+        self.model_name = model_name
         self.train_results = None
         self.test_results = None
+
+    def __del__(self):
+        del self.model_name
+        del self
 
     """ Overloading of comparison operators """
     def __eq__(self, other):
@@ -25,14 +34,8 @@ class Classifier(object):
     def __gt__(self,other):
         return self.train_results['accuracy'] > other.train_results['accuracy'] and self.test_results['accuracy'] > other.test_results['accuracy']
 
-    def train_model(self, x, y, epochs, batch_size):
-        self.model.train_model(x, y, epochs, batch_size)
-        accuracy, loss = self.model.evaluate(x, y)
-        self.train_results = {
-            "accuracy" : accuracy,
-            "loss" : loss
-            }
-        return accuracy, loss
+    def train_model(self, dataset_relative_directory_path, epochs, batch_size):
+        os.system(PYTHON_INTERPRETER_PATH + " " + os.getcwd() + os.path.sep + str(self.model_name) + ".py " + dataset_relative_directory_path + " " + str(epochs) + " " + str(batch_size))
 
     def evaluate(self, x, y):
         accuracy, loss = self.model.evaluate(x, y)
@@ -48,24 +51,21 @@ class Classifier(object):
     def load_model(self, model="test_model"):
         self.model.load_model(model)
 
-def test_classifier_model_class(model_class):
-    # load data
-    x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path="practice_data/")
-    
-    # Initialize objects
-    test_model = model_class(classes=classes)
-    test_classifier = Classifier(model=test_model)
+    class NeuralNetworkModels():
+        pass
+
+def test_classifier_model(model_name):
+    test_classifier = Classifier(model_name)
 
     # Train model
     epochs = int(input("How many epochs would you like to train the model for: "))
     batch_size = int(input("Minibatch size: "))
-    test_classifier.train_model(x_train, y_train, epochs, batch_size)
+    dataset_relative_directory_path = input("Relative directory path for data: ")
+    test_classifier.train_model(dataset_relative_directory_path, epochs, batch_size)
 
     # Evaluate model
-    loss, accuracy = test_classifier.evaluate(x_test, y_test)
+#    loss, accuracy = test_classifier.evaluate(x_test, y_test)
 
-    # Save model
-    test_classifier.save_model(model="test_model")
 
 def menu():
     print("\n==== Classifier Test ====")
@@ -75,9 +75,9 @@ def menu():
 
 def handle_menu_response(response):
     if response == "1":
-        test_classifier_model_class(ResNet50)
+        test_classifier_model("ResNet50")
     elif response == "2":
-        test_classifier_model_class(FullyConnectedNet)
+        test_classifier_model("FullyConnectedNet")
     elif response == "0":
         pass
     else:

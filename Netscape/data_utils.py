@@ -1,7 +1,9 @@
 import h5py
 import math
-
 import numpy as np
+
+from FileSystem import FileSystem
+
 
 def process_x(x):
     return x/255.
@@ -52,3 +54,21 @@ def random_mini_batches(X, Y, mini_batch_size = 64):
         mini_batches.append(mini_batch)
     
     return mini_batches
+
+def log_model(model, accuracy, loss, model_type, model_alias = "test_model"):
+    # Save the model to JSON
+    json_model = model.to_json()
+    with open(os.getcwd() + os.path.sep + "models" + os.path.sep + model_type + os.path.sep + model_alias + ".json", "w") as json_file:
+        json_file.write(json_model)
+
+    # Save weights
+    model.save_weights(os.getcwd() + os.path.sep + "models" + os.path.sep + model_type + os.path.sep + model_alias + ".h5")
+    print("Saved model " + model_alias + " to disk")
+
+    # Save loss and accuracy
+    FileSystem.start_log(str(loss), os.getcwd() + os.path.sep + "models" + os.path.sep + model_type + os.path.sep + model_alias + "_evaluation.txt")
+    FileSystem.log(str(accuracy), os.getcwd() + os.path.sep + "models" + os.path.sep + model_type + os.path.sep + model_alias + "_evaluation.txt")
+
+    # Save graphical model summary and print summary to console.
+    print(model.summary())
+#        plot_model(self.model, to_file= os.getcwd() + os.path.sep + "models" + os.path.sep + "ResNet50" + os.path.sep + model + ".png", show_shapes=True, show_layer_names=True)

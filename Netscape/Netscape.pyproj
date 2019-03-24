@@ -11,6 +11,9 @@
     <OutputPath>.</OutputPath>
     <Name>Netscape</Name>
     <RootNamespace>Netscape</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>practice_data/ 3 32</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

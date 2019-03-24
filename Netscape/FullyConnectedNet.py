@@ -25,62 +25,54 @@ from h5_utils import load_dataset
 from data_utils import convert_to_one_hot, process_x, process_y
 from FileSystem import FileSystem
 
+import sys
+
 class FullyConnectedNet(object):
-    def __init__(self, classes, input_shape = (64, 64, 3)):
+    def __init__(self, classes, input_shape = (64, 64, 3), inner_layer_layout=[25, 12]):
+        self.input_shape = input_shape
+        self.inner_layer_layout=[25, 12]
+        self.classes = classes.reshape((classes.shape[0],1))
         tf.reset_default_graph()
 
-        print("\nBuilding Fully Connected model with input_shape:", str(input_shape), "and classes", str(classes))
-        self.classes = classes.reshape((classes.shape[0],1))
-        self.input_shape = input_shape
-        self.model = self.build_model(input_shape, number_of_classes=self.classes.shape[0], inner_layer_layout=[25, 12])
-
-        print("\tCompiling model with the following parameters:")
-        print("\t\tOptimizer [Flavor of Gradient Descent] : Adam")
-        print("\t\tLoss Function : Categorical Cross Entropy")
-        print("\t\tMetrics : Accuracy")
-        self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-        print("\tFully Connected model now ready to load data.")
-
     def __del__(self):
-        del self.classes
         del self.input_shape
-        del self.model
+        del self.inner_layer_layout
+        del self.classes
+        del self
 
-    def build_model(self, input_shape, number_of_classes, inner_layer_layout = None):
-        """
-        Implementation of Fully Connected Network with the following architecture:
-        input_shape -> [inner_layer_output] -> softmax(number_of_classes)
+    def __str__(self):
+        return "FullyConnectedNet"
 
-        Arguments:
-        input_shape -- shape of the images of the dataset
-        number_of_classes -- integer, number of classes
-        inner_layer_layout -- array, # of neurons per layer.
+    def train_model(self, x_train, y_train, epochs = 2, batch_size = 32, optimizer = 'adam', loss_func = 'categorical_crossentropy', metric='accuracy'):
+        # Initialize variables
+        print("\nBuilding Fully Connected model with input_shape:", str(self.input_shape), "and classes", str(self.classes))
+        
+        # Build model
+        model = FullyConnectedNet.build_model(input_shape=self.input_shape, number_of_classes=self.classes.shape[0], inner_layer_layout=self.inner_layer_layout)
 
-        Returns:
-        model -- a Model() instance in Keras
-        """
-        X_input = Input(input_shape)
+        # Compile model
+        print("\tCompiling model with the following parameters:")
+        print("\t\tOptimizer [Flavor of Gradient Descent] : " + optimizer)
+        print("\t\tLoss Function : " + loss_func)
+        print("\t\tMetrics : " + metric)
+        model.compile(optimizer=optimizer, loss=loss_func, metrics=[metric])
 
-        X = Flatten()(X_input)
-
-        if inner_layer_layout is not None:
-            for layer in inner_layer_layout:
-                X = Dense(layer, activation='relu', name='fc' + str(layer), kernel_initializer = glorot_uniform())(X)
-
-        X = Dense(number_of_classes, activation="softmax", name='fc' + "output", kernel_initializer = glorot_uniform())(X)
-
-        model = Model(inputs = X_input, outputs = X, name = "Fully Connected Network")
-
-        return model
-
-    def train_model(self, x_train, y_train, epochs = 2, batch_size = 32):
+        # Process data
         x = process_x(x_train)
-        y = process_y(y_train, self.classes.shape[0])
+        y = process_y(y_train, classes.shape[0])
+
+        # train model
         print("\nTraining model... for ", epochs, "epochs with a batch size of", batch_size)
-        print("x_train shape: ", str(x.shape))
-        print("y_train shape: ", str(y.shape))
-        self.model.fit(x, y, epochs = epochs, batch_size = batch_size)
+        print("\tx_train shape: ", str(x.shape))
+        print("\ty_train shape: ", str(y.shape))
+        model.fit(x, y, epochs = epochs, batch_size = batch_size)
+
+        # evaluate model
+        accuracy, loss = model.evaluate(x_train, y_train)
+
+        # Save model
+        log_model(model, "FullyConnectedNet", "most_recent_model")
+
 
     def evaluate(self, x_test, y_test):
         x = process_x(x_test)
@@ -122,8 +114,8 @@ class FullyConnectedNet(object):
         print("Saved model " + model + " to disk")
 
         # Save loss and accuracy
-        FileSystem.start_log(str(loss), os.getcwd() + os.path.sep +  "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + "_evaluation.txt")
-        FileSystem.log(str(accuracy), os.getcwd() + os.path.sep + "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + "_evaluation.txt")
+#        FileSystem.start_log(str(loss), os.getcwd() + os.path.sep +  "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + "_evaluation.txt")
+#        FileSystem.log(str(accuracy), os.getcwd() + os.path.sep + "models" + os.path.sep + "Fully_Connected_Network" + os.path.sep + model + "_evaluation.txt")
 
         # Save graphical model summary and print summary to console.
         print(self.model.summary())
@@ -144,12 +136,56 @@ class FullyConnectedNet(object):
         print("Successfully loaded model weights for: " + model + " from disk.")
 
 
-def test_FCNN(epochs = 2, batch_size = 32):
-    x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path="practice_data/")
+    @staticmethod
+    def build_model(input_shape, number_of_classes, inner_layer_layout = None):
+        """
+        Implementation of Fully Connected Network with the following architecture:
+        input_shape -> [inner_layer_output] -> softmax(number_of_classes)
+
+        Arguments:
+        input_shape -- shape of the images of the dataset
+        number_of_classes -- integer, number of classes
+        inner_layer_layout -- array, # of neurons per layer.
+
+        Returns:
+        model -- a Model() instance in Keras
+        """
+        X_input = Input(input_shape)
+
+        X = Flatten()(X_input)
+
+        if inner_layer_layout is not None:
+            for layer in inner_layer_layout:
+                X = Dense(layer, activation='relu', name='fc' + str(layer), kernel_initializer = glorot_uniform())(X)
+
+        X = Dense(number_of_classes, activation="softmax", name='fc' + "output", kernel_initializer = glorot_uniform())(X)
+
+        model = Model(inputs = X_input, outputs = X, name = "Fully Connected Network")
+
+        return model
+
+
+def train_FCNN(dataset_relative_directory_path, epochs, batch_size):
+    x_train, y_train, x_test, y_test, classes = load_dataset(relative_directory_path=dataset_relative_directory_path)
     test_model = FullyConnectedNet(classes=classes)
     test_model.train_model(x_train, y_train, epochs, batch_size)
-    loss, accuracy = test_model.evaluate(x_test, y_test)
-    test_model.save_model(loss, accuracy, model="test_model")
+
 
 if __name__ == "__main__":
-    test_FCNN(750, 32)
+    """
+    "   Main Function
+    "   Description: Calls a test function when ran without arguments.  When provided arguments, the script will act as a work thread for training a FullyConnectedNet.
+    """
+    if len(sys.argv) == 1:
+        train_FCNN("practice_data/", 2, 32)
+    else:
+        # Relative path of dataset
+        dataset_relative_directory_path = sys.argv[1]
+
+        # Training Epochs
+        epochs = int(sys.argv[2])
+
+        # Batch Size
+        batch_size = int(sys.argv[3])
+
+        train_FCNN(dataset_relative_directory_path, epochs, batch_size)
